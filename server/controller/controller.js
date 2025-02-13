@@ -6,14 +6,17 @@ const fs = require('fs');
 const path = require('path'); // To manage file paths
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: "./config/config.env" });
 
 const secretKey = process.env.JWT_SECRET
 
 const transporter = nodemailer.createTransport({
   service: "gmail", // Change this to your email service provider
   auth: {
-    user: "kartik.kumar@rmoneyindia.com", // Replace with your email
-    pass: "dcbe thrd ftje ngnr" // Replace with your email password or app-specific password
+    user: process.env.myEmail,
+    pass: process.env.myPass,
   }
 });
 
@@ -156,7 +159,8 @@ exports.exportToExcel = async (req, res) => {
 exports.registerEmail = async (req, res) => {
   
   const { email } = req.body;
-
+  console.log(email);
+  
   if (!email) {
     return res.status(400).json({ success: false, message: "Email is required." });
   }
@@ -172,20 +176,25 @@ exports.registerEmail = async (req, res) => {
       email: email,
       accessToken: token,
     });
-
+    
     await newUser.save();
-
+    
     const mailOptions = {
-      from: "kartik.kumar@rmoneyindia.com",
+      from: process.env.myEmail,
       to: email,
       subject: "Your Access Token",
       text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure and do not share it with anyone.\n\nBest regards,\nRmoney India`
     };
     
     await transporter.sendMail(mailOptions);
+    
+    // console.log("Server Time:", new Date());
+    // console.log("MongoDB Time:", new Date(Date.now()).toISOString());
+   
 
     res.status(201).json({
       success: true,
+      accessToken:token,
       message: "User registered successfully. Token sent to email."
     });
 
@@ -237,6 +246,7 @@ exports.authenticateEmail = async (req, res) => {
 
     // Delete the user entry after successful authentication
     await RegisterUser.deleteOne({ email });
+    console.log("deleted");
     
     res.status(200).json({ success: true, message: "Authentication successful! Access granted." });
 

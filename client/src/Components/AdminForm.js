@@ -7,17 +7,14 @@ const AdminForm = () => {
   const [accessToken, setAccessToken] = useState("");
 
   const handleSubmit = async (e) => {
+    console.log("hello bhaiya");
+    
     e.preventDefault();
-  
     try {
-      // console.log("email ",email);
-      
-      const response = await axios.post("http://localhost:3001/register", { email : email});
-      // console.log(response);
-      
+      const response = await axios.post("https://game-memory-opal.vercel.app/register", { email });
       if (response.data.success) {
         setAccessToken(response.data.accessToken);
-        alert("User registered successfully. Access Token: " + response.data.accessToken);
+        alert("User registered successfully.");
       } else {
         alert("Failed to register user: " + response.data.message);
       }
@@ -28,25 +25,23 @@ const AdminForm = () => {
   };
 
   return (
-    <div className="admin-form-container">
-      <h2>Admin Form</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email:
+    <div className="admin-container">
+      <div className="admin-form-card">
+        <h2>Admin Registration</h2>
+        <form onSubmit={handleSubmit}>
+          <label>Email:</label>
           <input
             type="email"
-            name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-        </label>
-        <button type="submit">Register</button>
-      </form>
-
+          <button type="submit">Register</button>
+        </form>
+      </div>
       {accessToken && (
-        <div className="access-token-display">
-          <h3>Access Token:</h3>
+        <div className="access-token-container">
+          <h3>Access Token</h3>
           <p>{accessToken}</p>
         </div>
       )}

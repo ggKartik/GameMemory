@@ -14,10 +14,11 @@ const registerUserSchema = new moongose.Schema({
         trim:true,
         required:[true,"Please Enter Acess Token"],
         unique:[true,"Token Already In Use"],
-        // validate: [validator.isEmail, "Please Enter Valid Email"],
     },
-    createdAt: { type: Date, default: Date.now, expires: 1800 }
+    // createdAt: { type: Date, default: Date.now, expires: 10 }
 });
+
+// registerUserSchema.index({ createdAt: 1 }, { expireAfterSeconds: 900 });
 
 const RegisterUser=moongose.model('RegisterUser',registerUserSchema);
 
