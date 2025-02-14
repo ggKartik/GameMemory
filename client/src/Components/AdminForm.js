@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./AdminForm.css";
-
+import PopupMessage from "./PopupMessage";
 const AdminForm = () => {
   const [email, setEmail] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [popupMessage, setPopupMessage] = useState("");
 
   const handleSubmit = async (e) => {
     console.log("hello bhaiya");
@@ -14,13 +15,17 @@ const AdminForm = () => {
       const response = await axios.post("https://game-memory-opal.vercel.app/register", { email });
       if (response.data.success) {
         setAccessToken(response.data.accessToken);
-        alert("User registered successfully.");
+        setPopupMessage("User registered successfully.");
       } else {
-        alert("Failed to register user: " + response.data.message);
+        setPopupMessage("Failed to register user: " + response.data.message);
       }
     } catch (error) {
       console.error("Error registering user:", error);
-      alert("An error occurred while registering the user.");
+      if (error.response && error.response.data && error.response.data.message) {
+        setPopupMessage(error.response.data.message);
+      } else {
+        setPopupMessage("An error occurred while registering the user.");
+      }
     }
   };
 
@@ -45,6 +50,8 @@ const AdminForm = () => {
           <p>{accessToken}</p>
         </div>
       )}
+
+    <PopupMessage message={popupMessage} onClose={() => setPopupMessage("")} />
     </div>
   );
 };

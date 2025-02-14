@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const UserInfo = require('../modals/userInfo');
-const RegisterUser = require('../modals/registerUser');
+const RegisterUser = require('../modals/userRegistration');
 const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path'); // To manage file paths
@@ -156,58 +156,138 @@ exports.exportToExcel = async (req, res) => {
   }
 };
 
+// exports.registerEmail = async (req, res) => {
+  
+//   const { email } = req.body;
+//   console.log(email);
+  
+//   if (!email) {
+//     return res.status(400).json({ success: false, message: "Email is required." });
+//   }
+
+//   try {
+//     // Generate JWT token
+//     // const token = jwt.sign({ email }, "secretKey", { expiresIn: "1h" });
+//     let token;
+//     let isUnique = false;
+//     while (!isUnique) {
+//       token = Math.floor(100000 + Math.random() * 900000).toString(); // Generate token
+//       const existingToken = await RegisterUser.findOne({ accessToken: token });
+//       if (!existingToken) isUnique = true; // Ensure token is unique
+//     }
+    
+//     // const existingUser = await RegisterUser.findOne({ email });
+//     // if (existingUser) {
+//     //   return res.status(400).json({ success: false, message: "Email already exists." });
+//     // }
+
+
+//     // Create a new user entry with email and JWT token
+//     const newUser = new RegisterUser({
+//       email,
+//       accessToken: token,
+//     });
+//     console.log(newUser);
+    
+//     await newUser.save();
+    
+//     const mailOptions = {
+//       from: process.env.myEmail,
+//       to: email,
+//       subject: "Your Access Token",
+//       text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure and do not share it with anyone.\n\nBest regards,\nRmoney India`
+//     };
+    
+//     await transporter.sendMail(mailOptions);
+    
+//     // console.log("Server Time:", new Date());
+//     // console.log("MongoDB Time:", new Date(Date.now()).toISOString());
+   
+
+//     res.status(201).json({
+//       success: true,
+//       accessToken:token,
+//       message: "User registered successfully. Token sent to email."
+//     });
+
+//   } catch (error) {
+//     console.error("Error in registering user and sending email:", error.message);
+
+//     if (error.code === 11000) {
+//       return res.status(400).json({ success: false, message: "Email or Token already exists" });
+//     }
+
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 exports.registerEmail = async (req, res) => {
-  
-  const { email } = req.body;
-  console.log(email);
-  
-  if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required." });
-  }
-
   try {
-    // Generate JWT token
-    // const token = jwt.sign({ email }, "secretKey", { expiresIn: "1h" });
-    const token = Math.floor(100000 + Math.random() * 900000); // Random 6-digit number
-    // const token = uuidv4();
+    const { email } = req.body;
+    console.log("Received Email:", email);
 
-    // Create a new user entry with email and JWT token
-    const newUser = new RegisterUser({
-      email: email,
-      accessToken: token,
-    });
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
+
+    // Ensure Email Uniqueness
+    const existingUser = await RegisterUser.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: "Email already exists." });
+    }
+
+    // Generate a unique accessToken
+    let token;
+    let isUnique = false;
+    while (!isUnique) {
+      token = Math.floor(100000 + Math.random() * 900000).toString(); // Generate token
+      const existingToken = await RegisterUser.findOne({ accessToken: token });
+      if (!existingToken) isUnique = true; // Ensure token is unique
+    }
     
+    console.log("Generated Token:", token);
+
+    // Prevent null accessToken before saving
+    if (!token) {
+      return res.status(500).json({ success: false, message: "Error generating access token." });
+    }
+
+    // Create User
+    const newUser = new RegisterUser({ email, accessToken: token });
+    console.log("New User:", newUser);
+
     await newUser.save();
-    
+    console.log("User saved successfully:", newUser);
+
+    // Send Email
     const mailOptions = {
       from: process.env.myEmail,
       to: email,
       subject: "Your Access Token",
-      text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure and do not share it with anyone.\n\nBest regards,\nRmoney India`
+      text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure.\n\nBest regards,\nRmoney India`
+      // \nThis token is valid for 30minutes only
     };
-    
+
     await transporter.sendMail(mailOptions);
-    
-    // console.log("Server Time:", new Date());
-    // console.log("MongoDB Time:", new Date(Date.now()).toISOString());
-   
+    console.log("Email sent successfully to:", email);
 
     res.status(201).json({
       success: true,
-      accessToken:token,
+      accessToken: token,
       message: "User registered successfully. Token sent to email."
     });
 
   } catch (error) {
-    console.error("Error in registering user and sending email:", error.message);
+    console.error("Error in registering user:", error);
 
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: "Email or Token already exists" });
+      return res.status(400).json({ success: false, message: "Duplicate Email or Access Token" });
     }
 
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 exports.authenticateEmail = async (req, res) => {
   const { email, accessToken } = req.body;

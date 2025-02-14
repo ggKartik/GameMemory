@@ -1,4 +1,6 @@
+import { useState } from "react";
 import "./UserForm.css";
+import PopupMessage from "./PopupMessage";
 
 const UserForm = ({ formData, setFormData, setIsRunning, setFormSubmitted }) => {
   const handleInputChange = (e) => {
@@ -9,12 +11,14 @@ const UserForm = ({ formData, setFormData, setIsRunning, setFormSubmitted }) => 
     });
   };
 
+ const [popupMessage, setPopupMessage] = useState(""); 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Send the email and token to the backend for authentication
     try {
-      const response = await fetch("http://localhost:3001/authenticate", {
+      const response = await fetch("https://game-memory-opal.vercel.app/authenticate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,15 +32,15 @@ const UserForm = ({ formData, setFormData, setIsRunning, setFormSubmitted }) => 
       const data = await response.json();
 
       if (data.success) {
-        alert("Authentication successful! Starting the game...");
+        setPopupMessage("Authentication successful! Starting the game...");
         setIsRunning(1);
         setFormSubmitted(true);
       } else {
-        alert("Authentication failed! Please check your email and access token.");
+        setPopupMessage("Authentication failed! Please check your email and access token.");
       }
     } catch (error) {
       console.error("Error authenticating:", error);
-      alert("An error occurred while authenticating.");
+      setPopupMessage("An error occurred while authenticating.");
     }
   };
 
@@ -101,6 +105,7 @@ const UserForm = ({ formData, setFormData, setIsRunning, setFormSubmitted }) => 
         </div>
 
         <button type="submit" className="start-btn">Start</button>
+        <PopupMessage message={popupMessage} onClose={() => setPopupMessage("")} />
       </form>
     </div>
   );
