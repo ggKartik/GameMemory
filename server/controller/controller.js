@@ -264,12 +264,19 @@ exports.registerEmail = async (req, res) => {
       from: process.env.myEmail,
       to: email,
       subject: "Your Access Token",
-      text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure.\n\nBest regards,\nRmoney India`
+      html: `
+        <p>Hello,</p>
+        <p>Here is your access token: <strong>${token}</strong></p>
+        <p>Please keep it secure.</p>
+        <p>Here's the link to the test: <a href="https://game-memory-cniu.vercel.app/">Click Here</a></p>
+        <p>Best regards,<br>Rmoney India</p>
+    `
+      // text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure...\n Here's the link of the test <a href="https://example.com">https://example.com</a>\n\nBest regards,\nRmoney India`
       // \nThis token is valid for 30minutes only
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully to:", email);
+    // console.log("Email sent successfully to:", email);
 
     res.status(201).json({
       success: true,
