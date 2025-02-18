@@ -156,71 +156,6 @@ exports.exportToExcel = async (req, res) => {
   }
 };
 
-// exports.registerEmail = async (req, res) => {
-  
-//   const { email } = req.body;
-//   console.log(email);
-  
-//   if (!email) {
-//     return res.status(400).json({ success: false, message: "Email is required." });
-//   }
-
-//   try {
-//     // Generate JWT token
-//     // const token = jwt.sign({ email }, "secretKey", { expiresIn: "1h" });
-//     let token;
-//     let isUnique = false;
-//     while (!isUnique) {
-//       token = Math.floor(100000 + Math.random() * 900000).toString(); // Generate token
-//       const existingToken = await RegisterUser.findOne({ accessToken: token });
-//       if (!existingToken) isUnique = true; // Ensure token is unique
-//     }
-    
-//     // const existingUser = await RegisterUser.findOne({ email });
-//     // if (existingUser) {
-//     //   return res.status(400).json({ success: false, message: "Email already exists." });
-//     // }
-
-
-//     // Create a new user entry with email and JWT token
-//     const newUser = new RegisterUser({
-//       email,
-//       accessToken: token,
-//     });
-//     console.log(newUser);
-    
-//     await newUser.save();
-    
-//     const mailOptions = {
-//       from: process.env.myEmail,
-//       to: email,
-//       subject: "Your Access Token",
-//       text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure and do not share it with anyone.\n\nBest regards,\nRmoney India`
-//     };
-    
-//     await transporter.sendMail(mailOptions);
-    
-//     // console.log("Server Time:", new Date());
-//     // console.log("MongoDB Time:", new Date(Date.now()).toISOString());
-   
-
-//     res.status(201).json({
-//       success: true,
-//       accessToken:token,
-//       message: "User registered successfully. Token sent to email."
-//     });
-
-//   } catch (error) {
-//     console.error("Error in registering user and sending email:", error.message);
-
-//     if (error.code === 11000) {
-//       return res.status(400).json({ success: false, message: "Email or Token already exists" });
-//     }
-
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
 exports.registerEmail = async (req, res) => {
   try {
     const { email } = req.body;
@@ -271,12 +206,9 @@ exports.registerEmail = async (req, res) => {
         <p>Here's the link to the test: <a href="https://game-memory-cniu.vercel.app/">Click Here</a></p>
         <p>Best regards,<br>Rmoney India</p>
     `
-      // text: `Hello,\n\nHere is your access token: ${token}\nPlease keep it secure...\n Here's the link of the test <a href="https://example.com">https://example.com</a>\n\nBest regards,\nRmoney India`
-      // \nThis token is valid for 30minutes only
     };
 
     await transporter.sendMail(mailOptions);
-    // console.log("Email sent successfully to:", email);
 
     res.status(201).json({
       success: true,
